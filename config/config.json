@@ -1,0 +1,28 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "table-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/table/TableWebPart.js",
+          "manifest": "./src/webparts/table/TableWebPart.manifest.json"
+        }
+      ]
+    },
+    "header-wp-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/headerWp/HeaderWpWebPart.js",
+          "manifest": "./src/webparts/headerWp/HeaderWpWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "TableWebPartStrings": "lib/webparts/table/loc/{locale}.js",
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "HeaderWpWebPartStrings": "lib/webparts/headerWp/loc/{locale}.js"
+  }
+}
