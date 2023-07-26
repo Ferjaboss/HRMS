@@ -2,6 +2,7 @@ import * as React from "react";
 import { IHeaderWpProps } from "./IHeaderWpProps";
 import "./../../../tailwind.css";
 import { sp} from "@pnp/sp";
+
 import "@pnp/graph/users";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -21,11 +22,6 @@ export default class HeaderWp extends React.Component<IHeaderWpProps, State> {
   Email = React.createRef<HTMLInputElement>();
   Position = React.createRef<HTMLInputElement>();
   PhoneNumber = React.createRef<HTMLInputElement>();
-  private getSPUserData(): void {      
-    sp.web.currentUser.get().then((r: CurrentUser) => {  
-      this.renderData(r['Title']);  
-    });  
-  }
 
   constructor(props: IHeaderWpProps) {
     super(props);
