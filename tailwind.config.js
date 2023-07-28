@@ -1,11 +1,20 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-      content: ['./src/**/*.tsx'],
+      content: [
+      './src/webparts/**/*.tsx',],
       darkMode: 'class',
     theme: {
+      borderRadius: {
+        'none': '30px',
+        'sm': '0.125rem',
+        DEFAULT: '30px',
+        'md': '0.375rem',
+        'lg': '0.5rem',
+        'full': '9999px',
+        'large': '12px',
+      },
       extend: {
         colors: {
-          transparent: 'transparent',
-          current: 'currentColor',
           'white': '#ffffff',
           'Princeton-Orange': '#f47c28',
           'Sandy-Brown': '#F7A369',
@@ -24,10 +33,10 @@ module.exports = {
         }
       },
     },
-    variants: {
-   
+    variants: { 
     },
-    plugins: [require('flowbite/plugin')
+    plugins: [require('flowbite/plugin'),
+    
 
     ],
     future: {

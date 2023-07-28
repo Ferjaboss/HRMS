@@ -17,12 +17,21 @@
           "manifest": "./src/webparts/headerWp/HeaderWpWebPart.manifest.json"
         }
       ]
+    },
+    "trainee-header-wp-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/traineeHeaderWp/TraineeHeaderWpWebPart.js",
+          "manifest": "./src/webparts/traineeHeaderWp/TraineeHeaderWpWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "TableWebPartStrings": "lib/webparts/table/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
-    "HeaderWpWebPartStrings": "lib/webparts/headerWp/loc/{locale}.js"
+    "HeaderWpWebPartStrings": "lib/webparts/headerWp/loc/{locale}.js",
+    "TraineeHeaderWpWebPartStrings": "lib/webparts/traineeHeaderWp/loc/{locale}.js"
   }
 }
