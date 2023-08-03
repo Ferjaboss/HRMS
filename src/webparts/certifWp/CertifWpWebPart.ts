@@ -8,28 +8,28 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
-import * as strings from 'TableWebPartStrings';
-import Table from './components/App';
-import { ITableProps } from './components/ITableProps';
+import * as strings from 'CertifWpWebPartStrings';
+import CertifWp from './components/CertifWp';
+import { ICertifWpProps } from './components/ICertifWpProps';
 
-export interface ITableWebPartProps {
+export interface ICertifWpWebPartProps {
   description: string;
 }
 
-export default class TableWebPart extends BaseClientSideWebPart<ITableWebPartProps> {
+export default class CertifWpWebPart extends BaseClientSideWebPart<ICertifWpWebPartProps> {
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
 
   public render(): void {
-    const element: React.ReactElement<ITableProps> = React.createElement(
-      Table,
+    const element: React.ReactElement<ICertifWpProps> = React.createElement(
+      CertifWp,
       {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
         environmentMessage: this._environmentMessage,
         hasTeamsContext: !!this.context.sdks.microsoftTeams,
-        userDisplayName: this.context.pageContext.user.displayName,
+        userDisplayName: this.context.pageContext.user.displayName
       }
     );
 

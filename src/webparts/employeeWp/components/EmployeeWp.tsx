@@ -1,6 +1,6 @@
 //importing Modules
 import * as React from "react";
-import { ITableProps } from "./ITableProps";
+import { IEmployeeWpProps } from "./IEmployeeWpProps";
 import "./../../../tailwind.css";
 import { sp } from "@pnp/sp/presets/all";
 
@@ -33,13 +33,13 @@ export interface State {
   searchQuery: string;
 }
 
-export default class App extends React.Component<ITableProps, State> {
+export default class App extends React.Component<IEmployeeWpProps, State> {
   Name = React.createRef<HTMLInputElement>();
   Email = React.createRef<HTMLInputElement>();
   Position = React.createRef<HTMLInputElement>();
   PhoneNumber = React.createRef<HTMLInputElement>();
   //Constructor to initialize the state
-  constructor(props: ITableProps) {
+  constructor(props: IEmployeeWpProps) {
     super(props);
     this.state = {
       listItems: [],
@@ -293,7 +293,7 @@ export default class App extends React.Component<ITableProps, State> {
       });
   }
 
-  public render(): React.ReactElement<ITableProps> {
+  public render(): React.ReactElement<IEmployeeWpProps> {
     const filteredListItems = this.state.listItems.filter((employee) =>
       employee.Title.toLowerCase().includes(
         this.state.searchQuery.toLowerCase()
@@ -479,7 +479,7 @@ export default class App extends React.Component<ITableProps, State> {
                         />
                       </div>
                       <button
-                        className="w-full text-white bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:font-semibold hover:text-base hover:shadow-lg"
+                        className="w-full duration-300 text-white bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:font-semibold hover:text-base hover:shadow-lg"
                         onClick={() => this.createItem()}
                       >
                         Add Employee
@@ -638,7 +638,7 @@ export default class App extends React.Component<ITableProps, State> {
                         onClick={() =>
                           this.deleteItem(this.state.selectedItemId)
                         }
-                        className="text-white bg-Sandy-Brown hover:bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2"
+                        className="text-white duration-300 hover:font-semibold hover:text-base hover:shadow-lg bg-Sandy-Brown hover:bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2"
                       >
                         Yes, I&apos;m sure
                       </button>
@@ -732,7 +732,7 @@ export default class App extends React.Component<ITableProps, State> {
                           />
                         </div>
                         <button
-                          className="w-full text-white bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                          className="w-full duration-300 text-white bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:font-semibold hover:text-base hover:shadow-lg"
                           onClick={() => this.updateEmployee()}
                         >
                           Save Changes

@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
-  "id": "ac71ba0c-441f-4261-81de-0e37bed31c53",
-  "alias": "TraineeHeaderWpWebPart",
+  "id": "c681cf2f-f388-4831-834b-5825ad2f4248",
+  "alias": "EmployeeWpWebPart",
   "componentType": "WebPart",
 
   // The "*" signifies that the version should be taken from the package.json
@@ -18,11 +18,11 @@
   "preconfiguredEntries": [{
     "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Advanced
     "group": { "default": "Advanced" },
-    "title": { "default": "TraineeHeaderWp" },
-    "description": { "default": "TraineeHeaderWp description" },
+    "title": { "default": "Employee-WP" },
+    "description": { "default": "Employee-WP description" },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "TraineeHeaderWp"
+      "description": "Employee-WP"
     }
   }]
 }

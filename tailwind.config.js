@@ -27,7 +27,7 @@ module.exports = {
           'Philippine-Gray': '#929292',
           'Argent':'#C2C1C1',
           'Cultured':'#F5F5F5',
-          'red' : '#FF0000',
+          
           
 
         }

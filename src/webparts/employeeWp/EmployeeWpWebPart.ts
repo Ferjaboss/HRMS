@@ -8,22 +8,22 @@ import {
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
-import * as strings from 'TraineeHeaderWpWebPartStrings';
-import TraineeHeaderWp from './components/TraineeHeaderWp';
-import { ITraineeHeaderWpProps } from './components/ITraineeHeaderWpProps';
+import * as strings from 'EmployeeWpWebPartStrings';
+import EmployeeWp from './components/EmployeeWp';
+import { IEmployeeWpProps } from './components/IEmployeeWpProps';
 
-export interface ITraineeHeaderWpWebPartProps {
+export interface IEmployeeWpWebPartProps {
   description: string;
 }
 
-export default class TraineeHeaderWpWebPart extends BaseClientSideWebPart<ITraineeHeaderWpWebPartProps> {
+export default class EmployeeWpWebPart extends BaseClientSideWebPart<IEmployeeWpWebPartProps> {
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
 
   public render(): void {
-    const element: React.ReactElement<ITraineeHeaderWpProps> = React.createElement(
-      TraineeHeaderWp,
+    const element: React.ReactElement<IEmployeeWpProps> = React.createElement(
+      EmployeeWp,
       {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,

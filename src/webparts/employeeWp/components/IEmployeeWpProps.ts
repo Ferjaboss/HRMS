@@ -1,4 +1,4 @@
-export interface ITableProps {
+export interface IEmployeeWpProps {
   description: string;
   isDarkTheme: boolean;
   environmentMessage: string;

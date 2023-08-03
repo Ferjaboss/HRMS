@@ -2,36 +2,28 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
   "version": "2.0",
   "bundles": {
-    "table-web-part": {
+
+    "employee-wp-web-part": {
       "components": [
         {
-          "entrypoint": "./lib/webparts/table/TableWebPart.js",
-          "manifest": "./src/webparts/table/TableWebPart.manifest.json"
+          "entrypoint": "./lib/webparts/employeeWp/EmployeeWpWebPart.js",
+          "manifest": "./src/webparts/employeeWp/EmployeeWpWebPart.manifest.json"
         }
       ]
     },
-    "header-wp-web-part": {
+    "certif-wp-web-part": {
       "components": [
         {
-          "entrypoint": "./lib/webparts/headerWp/HeaderWpWebPart.js",
-          "manifest": "./src/webparts/headerWp/HeaderWpWebPart.manifest.json"
-        }
-      ]
-    },
-    "trainee-header-wp-web-part": {
-      "components": [
-        {
-          "entrypoint": "./lib/webparts/traineeHeaderWp/TraineeHeaderWpWebPart.js",
-          "manifest": "./src/webparts/traineeHeaderWp/TraineeHeaderWpWebPart.manifest.json"
+          "entrypoint": "./lib/webparts/certifWp/CertifWpWebPart.js",
+          "manifest": "./src/webparts/certifWp/CertifWpWebPart.manifest.json"
         }
       ]
     }
   },
   "externals": {},
   "localizedResources": {
-    "TableWebPartStrings": "lib/webparts/table/loc/{locale}.js",
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
-    "HeaderWpWebPartStrings": "lib/webparts/headerWp/loc/{locale}.js",
-    "TraineeHeaderWpWebPartStrings": "lib/webparts/traineeHeaderWp/loc/{locale}.js"
+    "EmployeeWpWebPartStrings": "lib/webparts/employeeWp/loc/{locale}.js",
+    "CertifWpWebPartStrings": "lib/webparts/certifWp/loc/{locale}.js"
   }
 }

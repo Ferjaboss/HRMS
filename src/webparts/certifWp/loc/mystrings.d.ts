@@ -1,4 +1,4 @@
-declare interface ITableWebPartStrings {
+declare interface ICertifWpWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
   DescriptionFieldLabel: string;
@@ -12,7 +12,7 @@ declare interface ITableWebPartStrings {
   AppOutlookEnvironment: string;
 }
 
-declare module 'TableWebPartStrings' {
-  const strings: ITableWebPartStrings;
+declare module 'CertifWpWebPartStrings' {
+  const strings: ICertifWpWebPartStrings;
   export = strings;
 }

@@ -1,4 +1,4 @@
-declare interface IHeaderWpWebPartStrings {
+declare interface IEmployeeWpWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
   DescriptionFieldLabel: string;
@@ -12,7 +12,7 @@ declare interface IHeaderWpWebPartStrings {
   AppOutlookEnvironment: string;
 }
 
-declare module 'HeaderWpWebPartStrings' {
-  const strings: IHeaderWpWebPartStrings;
+declare module 'EmployeeWpWebPartStrings' {
+  const strings: IEmployeeWpWebPartStrings;
   export = strings;
 }
