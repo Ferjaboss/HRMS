@@ -21,6 +21,11 @@ export interface State {
   isOtherSubCategorySelected: boolean;
   certificateAssignments: any[];
   userEmail: string;
+  pendingItemCount: number;
+  showAlert: boolean;
+  showRequired : boolean;
+  customCategory: string;
+  customSubCategory: string;
 }
 
 export default class App extends React.Component<ICertifWpProps, State> {
@@ -39,6 +44,11 @@ export default class App extends React.Component<ICertifWpProps, State> {
       isOtherSubCategorySelected: false,
       certificateAssignments: [],
       userEmail: "",
+      pendingItemCount: 0,
+      showAlert: false,
+      showRequired : false,
+      customCategory: "",
+      customSubCategory: "",
     };
     this.hideAddModal = this.hideAddModal.bind(this);
     this.handleCategoryChange = this.handleCategoryChange.bind(this);
@@ -72,14 +82,14 @@ export default class App extends React.Component<ICertifWpProps, State> {
     );
   }
   public getStatusLabel(status: string) {
-    switch (status.toLowerCase()) {
-      case "declined":
+    switch (status) {
+      case "Rejected":
         return (
           <span className="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">
             Declined
           </span>
         );
-      case "approved":
+      case "Approved":
         return (
           <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">
             Approved
@@ -99,133 +109,158 @@ export default class App extends React.Component<ICertifWpProps, State> {
         baseUrl: "https://0331r.sharepoint.com/sites/HR",
       },
     });
-  
+
     // Fetch the current user's email
     const currentUser = await sp.web.currentUser.get();
     const currentUserEmail = currentUser.Email;
     this.setState({ userEmail: currentUserEmail });
-  
+
     // Check if the current user is a member of the "HR" group
     const group = await sp.web.currentUser.groups.get();
     const isMemberOfHR = group.some((g) => g.Title === "HR");
     this.setState({ isMemberOfHR });
-  
-    // Fetch categories and certificate assignments
+
+    // Fetch categories and certification assignments
     const categories = await this.fetchCategories();
     const certificateAssignments = await this.fetchCertificateAssignments();
-    console.log("Certificate Assignments:", certificateAssignments);
     this.setState({ categories, certificateAssignments });
+    const certificationAssignmentList = sp.web.lists.getByTitle(
+      "Certification Assignment"
+    );
+    const pendingItems = await certificationAssignmentList.items
+      .filter(`Status eq 'Pending'`)
+      .get();
+    const pendingItemCount = pendingItems.length;
+    this.setState({ pendingItemCount });
   }
-  
-  private async submitRequest(): Promise<void> {
-    const { selectedCategory, selectedSubCategory } = this.state;
-    if (
-      !selectedCategory ||
-      (!selectedSubCategory && !this.state.isOtherSubCategorySelected)
-    ) {
-      alert("Please select a Category and Subcategory.");
-      return;
-    }
 
+  private async submitRequest(): Promise<void> {
+    const {
+      selectedCategory,
+      selectedSubCategory,
+      isOtherCategorySelected,
+      isOtherSubCategorySelected,
+      customCategory,
+      customSubCategory,
+    } = this.state;
+    
+    // Check if the user selected options from the select menus (not "Other" option)
+    const isCategorySelected = selectedCategory && !isOtherCategorySelected;
+    const isSubCategorySelected = selectedSubCategory && !isOtherSubCategorySelected;
+  
     try {
-      // Get the current user's properties from SharePoint
       const currentUser = await sp.web.currentUser.get();
       const currentUserEmail = currentUser.Email;
-
-      // Query the "Employee Information" list to find the employee's information
       const employeeList = sp.web.lists.getByTitle("Employee Information");
       const employeeQuery = await employeeList.items
         .filter(`Email eq '${currentUserEmail}'`)
         .select("ID")
         .get();
-
-      if (employeeQuery.length === 0) {
-        alert("Employee not found in the Employee Information list.");
-        return;
-      }
-
-      const employeeID = employeeQuery[0].ID;
-
-      // Get the selected Category and Subcategory IDs from the "Certification" list
-      const certificationList = sp.web.lists.getByTitle("Certification");
-      const categoryQuery = await certificationList.items
-        .filter(`Title eq '${selectedCategory}'`)
-        .select("ID")
-        .get();
-
-      if (categoryQuery.length === 0) {
-        alert("Selected Category not found in the Certification list.");
-        return;
-      }
-
-      const categoryID = categoryQuery[0].ID;
-
-      let subcategoryID: number | null = null;
-
-      if (!this.state.isOtherSubCategorySelected) {
+  
+      const employeeID = employeeQuery.length > 0 ? employeeQuery[0].ID : null;
+  
+      // If the user selected options from both select menus, add to "Certification Assignment" list
+      if (isCategorySelected && isSubCategorySelected) {
+        const certificationList = sp.web.lists.getByTitle("Certification");
+        const categoryQuery = await certificationList.items
+          .filter(`Title eq '${selectedCategory}'`)
+          .select("ID")
+          .get();
         const subcategoryQuery = await certificationList.items
           .filter(`SubCategorie eq '${selectedSubCategory}'`)
           .select("ID")
           .get();
-
-        if (subcategoryQuery.length === 0) {
-          alert("Selected Subcategory not found in the Certification list.");
+  
+        const categoryID = categoryQuery.length > 0 ? categoryQuery[0].ID : null;
+        const subcategoryID = subcategoryQuery.length > 0 ? subcategoryQuery[0].ID : null;
+  
+        if (!categoryID || !subcategoryID) {
+          this.setState({ showRequired: true });
           return;
         }
-
-        subcategoryID = subcategoryQuery[0].ID;
+  
+        // Create a new item in the "Certification Assignment" list
+        const certificationAssignmentList = sp.web.lists.getByTitle("Certification Assignment");
+        await certificationAssignmentList.items.add({
+          EmployeeNameId: employeeID,
+          CertifNameId: categoryID,
+          CertifSubCatId: subcategoryID,
+          Status: "Pending",
+        });
       }
-
-      // Create a new item in the "Certification Assignment" list
-      const certificationAssignmentList = sp.web.lists.getByTitle(
-        "Certificate Assignment"
-      );
-      await certificationAssignmentList.items.add({
-        EmployeeNameId: employeeID,
-        CertifNameId: categoryID,
-        CertifSubCatId: subcategoryID,
-        Title: "Pending",
-      });
-
-      alert("Certificate request submitted successfully.");
-      this.setState({
-        isAddModalOpen: false,
-        selectedCategory: "",
-        selectedSubCategory: "",
-        isOtherCategorySelected: false,
-        isOtherSubCategorySelected: false,
-      });
+  
+      // If the user selected "Other" for either category or subcategory, add to "Suggested Certifications" list
+      if (isOtherCategorySelected || isOtherSubCategorySelected) {
+        const suggestedCertificationsList = sp.web.lists.getByTitle("SuggCert");
+        const suggestedCategory = isOtherCategorySelected ? customCategory : selectedCategory;
+        const suggestedSubcategory = isOtherSubCategorySelected ? customSubCategory : selectedSubCategory;
+  
+        if (suggestedCategory || suggestedSubcategory) {
+          await suggestedCertificationsList.items.add({
+            Title: suggestedCategory,
+            SubCategorie: suggestedSubcategory,
+            EmployeeEmail: currentUserEmail,
+          });
+        }
+      }
+  
+      
+  
+      setTimeout(() => {
+        this.setState({
+          showAlert: false,
+        });
+      }, 5000);
+  
       const certificateAssignments = await this.fetchCertificateAssignments();
       this.setState({ certificateAssignments });
     } catch (error) {
       console.error("Error submitting request:", error);
-      alert(
-        "An error occurred while submitting the request. Please try again."
-      );
     }
+    const isFormValid =
+    (isCategorySelected && isSubCategorySelected) ||
+    (isOtherCategorySelected && customCategory) ||
+    (isOtherSubCategorySelected && customSubCategory);
+
+  if (!isFormValid) {
+    this.setState({ showRequired: true ,
+    isAddModalOpen: true,
+    showAlert: false,});
+  
+    return;
   }
+  this.setState({
+    isAddModalOpen: false,
+    selectedCategory: "",
+    selectedSubCategory: "",
+    isOtherCategorySelected: false,
+    isOtherSubCategorySelected: false,
+    showAlert: true,
+    showRequired : false,
+  });
+  }
+  
   private async fetchCertificateAssignments(): Promise<any[]> {
     try {
       const assignments = await sp.web.lists
-        .getByTitle("Certificate Assignment")
+        .getByTitle("Certification Assignment")
         .items.select(
           "ID",
           "EmployeeName/Title",
-          "EmployeeName/Email", 
+          "EmployeeName/Email",
           "CertifName/Title",
           "CertifSubCat/SubCategorie",
-          "Title"
+          "Status"
         )
         .expand("EmployeeName", "CertifName", "CertifSubCat")
         .get();
-  
+
       return assignments;
     } catch (error) {
       console.error("Error fetching data:", error);
       throw new Error("Error fetching data from SharePoint.");
     }
   }
-  
 
   private handleSearchInputChange(
     event: React.ChangeEvent<HTMLInputElement>
@@ -233,55 +268,43 @@ export default class App extends React.Component<ICertifWpProps, State> {
     this.setState({ searchQuery: event.target.value });
   }
 
-  private handleCategoryChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  private handleCategoryChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCategory = event.target.value;
     this.setState({ selectedCategory });
-
+  
     if (selectedCategory === "Other") {
       this.setState({
+        customSubCategory: "",
         isOtherCategorySelected: true,
-        subCategories: [], // Clear the subcategories when "Other" is selected for category
-        selectedSubCategory: "", // Reset the selected subcategory
-        isOtherSubCategorySelected: false, // Reset the other subcategory flag
+        isOtherSubCategorySelected: true,
       });
     } else {
-      this.setState({ isOtherCategorySelected: false });
-
+      this.setState({ isOtherCategorySelected: false, isOtherSubCategorySelected: false });
+  
       if (selectedCategory) {
         const subCategories = await this.fetchSubCategories(selectedCategory);
         this.setState({ subCategories });
-
-        if (subCategories.length === 0) {
-          this.setState({
-            selectedSubCategory: "",
-            isOtherSubCategorySelected: false,
-          });
-        } else {
-          this.setState({
-            selectedSubCategory: subCategories[0].title,
-            isOtherSubCategorySelected: false,
-          });
-        }
-      } else {
-        this.setState({ subCategories: [], selectedSubCategory: "" });
-      }
+      } 
     }
   };
-  private handleSubCategoryChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  
+  private handleSubCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSubCategory = event.target.value;
-    this.setState({ selectedSubCategory });
-
+  
     if (selectedSubCategory === "Other") {
-      this.setState({ isOtherSubCategorySelected: true });
+      this.setState({
+        selectedSubCategory: "other",
+        isOtherSubCategorySelected: true,
+      });
     } else {
-      this.setState({ isOtherSubCategorySelected: false });
+      this.setState({
+        selectedSubCategory,
+        isOtherSubCategorySelected: false,
+      });
     }
   };
-
+  
+  
   private showAddModal(): void {
     this.setState({ isAddModalOpen: true });
   }
@@ -289,18 +312,14 @@ export default class App extends React.Component<ICertifWpProps, State> {
   private hideAddModal(): void {
     this.setState({ isAddModalOpen: false });
   }
-
   public render(): React.ReactElement<ICertifWpProps> {
     const currentUserEmail = this.state.userEmail;
-    
+
     const currentUserAssignments = this.state.certificateAssignments.filter(
       (assignment) => {
         if (assignment.EmployeeName && assignment.EmployeeName.Email) {
-          console.log("Email of EmployeeName:", assignment.EmployeeName.Email);
-          console.log("Current User Email:", currentUserEmail);
           return assignment.EmployeeName.Email === currentUserEmail;
         } else {
-          console.log("EmployeeName or Email is undefined:", assignment.EmployeeName);
           return false;
         }
       }
@@ -308,7 +327,7 @@ export default class App extends React.Component<ICertifWpProps, State> {
     // Filter out the requests made by other users with "approved" status
     const otherUserApprovedRequests = this.state.certificateAssignments.filter(
       (assignment) =>
-        assignment.Title.toLowerCase() === "approved" &&
+        assignment.Status == "Approved" &&
         assignment.EmployeeName.Email !== currentUserEmail
     );
     const { searchQuery } = this.state;
@@ -316,23 +335,69 @@ export default class App extends React.Component<ICertifWpProps, State> {
     // Filter the assignments based on the search query for current user
     const filteredCurrentUserAssignments = currentUserAssignments.filter(
       (assignment) =>
-        assignment.EmployeeName.Title.toLowerCase().includes(searchQuery.toLowerCase())
+        assignment.EmployeeName.Title.toLowerCase().includes(
+          searchQuery.toLowerCase()
+        )
     );
-  
+
     // Filter the assignments based on the search query for other users
     const filteredOtherUserAssignments = otherUserApprovedRequests.filter(
       (assignment) =>
-        assignment.EmployeeName.Title.toLowerCase().includes(searchQuery.toLowerCase())
+        assignment.EmployeeName.Title.toLowerCase().includes(
+          searchQuery.toLowerCase()
+        )
     );
-  
+
     // Concatenate both filtered lists
-    const filteredAssignments = [...filteredCurrentUserAssignments, ...filteredOtherUserAssignments];
-  
-
-
+    const filteredAssignments = [
+      ...filteredCurrentUserAssignments,
+      ...filteredOtherUserAssignments,
+    ];
 
     return (
       <>
+        {this.state.showAlert && (
+          <div className="flex items-center p-4 mb-4 text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400">
+            <svg
+              className="flex-shrink-0 w-4 h-4"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div className="ml-3 text-sm font-medium">
+              Your Request Has been Submitted Successfully and will be reviewed
+              by HR.
+            </div>
+            <button
+              type="button"
+              className="ml-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"
+              data-dismiss-target="#alert-3"
+              aria-label="Close"
+              onClick={() => this.setState({ showAlert: false })}
+            >
+              <span className="sr-only">Close</span>
+              <svg
+                className="w-3 h-3"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 14"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
         <section>
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -378,23 +443,46 @@ export default class App extends React.Component<ICertifWpProps, State> {
             </ol>
           </nav>
           <br />
-          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-between items-center">
+          <div className="w-full mx-auto sm:px-6 lg:px-8 flex justify-between items-center">
             <div>
-              <h2 className="mb-4 text-3xl font-extrabold leading-none tracking-tight text-Princeton-Orange md:text-4xl dark:text-white">
+              <h2 className="mb-4 text-3xl font-extrabold leading-none tracking-tight text-Princeton-Orange md:text-4xl dark:text-white flex-shrink-0">
                 Certifications Requests
               </h2>
             </div>
-
-            <div className="m-2 p-2">
-              <button
-                onClick={() => this.showAddModal()}
-                className="px-4 py-2 bg-Metallic-Blue hover:bg-Shadow-Blue rounded-lg text-white"
-              >
-                <i className="fa-solid fa-plus mr-2 text-white" />
-                Request Certificate
-              </button>
+            <div className="flex items-center">
+              {this.state.isMemberOfHR ? (
+                <div className="flex flex-col items-end">
+                  <a
+                    href="https://outlook.office365.com/"
+                    className="relative w-full mb-2 flex justify-center items-center px-4 py-2 bg-Metallic-Blue hover:bg-Shadow-Blue rounded-lg text-white"
+                  >
+                    Manage Requests
+                    {this.state.pendingItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full dark:border-gray-900">
+                        {this.state.pendingItemCount}
+                      </span>
+                    )}
+                  </a>
+                  <button
+                    onClick={() => this.showAddModal()}
+                    className="w-full px-4 py-2 bg-Metallic-Blue hover:bg-Shadow-Blue rounded-lg text-white"
+                  >
+                    <i className="fa-solid fa-plus mr-2 text-white" />
+                    Request Certificate
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => this.showAddModal()}
+                  className="px-4 py-2 bg-Metallic-Blue hover:bg-Shadow-Blue rounded-lg text-white"
+                >
+                  <i className="fa-solid fa-plus mr-2 text-white" />
+                  Request Certificate
+                </button>
+              )}
             </div>
           </div>
+
           <div className="mb-6 mt-6 ml-4">
             <div className="relative flex items-center w-full flex-wrap">
               <input
@@ -474,26 +562,32 @@ export default class App extends React.Component<ICertifWpProps, State> {
                               >
                                 {category.title}
                               </option>
+                              
                             ))}
                             <option value="Other">Other</option>
                           </select>
+                          
                         ) : (
                           <div className="flex items-center w-full">
-                            <input
-                              type="text"
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                              placeholder="Please enter your option"
-                              onChange={(event) =>
-                                this.setState({
-                                  selectedCategory: event.target.value,
-                                })
-                              }
+                        <input
+        type="text"
+        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        placeholder="Please enter your option"
+        value={this.state.customCategory}
+        onChange={(event) =>
+          this.setState({
+            customCategory: event.target.value,
+          })
+        }
                             />
+                            
                             <button
                               onClick={() =>
                                 this.setState({
                                   isOtherCategorySelected: false,
                                   selectedCategory: "",
+                                  customCategory: "",
+                                  customSubCategory: "",
                                 })
                               }
                               className="text-gray-900 w-10"
@@ -527,21 +621,23 @@ export default class App extends React.Component<ICertifWpProps, State> {
                           </select>
                         ) : (
                           <div className="flex items-center w-full">
-                            <input
-                              type="text"
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                              placeholder="Enter your subcategory"
-                              onChange={(event) =>
-                                this.setState({
-                                  selectedSubCategory: event.target.value,
-                                })
-                              }
+                               <input
+        type="text"
+        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        placeholder="Enter your subcategory"
+        value={this.state.customSubCategory}
+        onChange={(event) =>
+          this.setState({
+            customSubCategory: event.target.value,
+          })
+        }
                             />
                             <button
                               onClick={() =>
                                 this.setState({
                                   isOtherSubCategorySelected: false,
                                   selectedSubCategory: "",
+                                  customSubCategory: "",
                                 })
                               }
                               className="text-gray-900 w-10"
@@ -551,6 +647,11 @@ export default class App extends React.Component<ICertifWpProps, State> {
                           </div>
                         )}
                       </div>
+                      {this.state.showRequired &&(
+                        <div className="text-red-500 text-sm">
+                          Please fill all required fields
+                        </div>
+                      )}
                       <button
                         onClick={() => this.submitRequest()}
                         className="w-full duration-300 text-white bg-Princeton-Orange focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center hover:font-semibold hover:text-base hover:shadow-lg"
@@ -575,27 +676,26 @@ export default class App extends React.Component<ICertifWpProps, State> {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-              {filteredAssignments.map((assignment) => (
-                <tr key={assignment.ID}>
-                  <td className="px-6 py-3">
-                    {assignment.EmployeeName.Title}
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="pl-3">
-                      <div className="text-base font-semibold">
-                        {assignment.CertifName.Title}
+                {filteredAssignments.map((assignment) => (
+                  <tr key={assignment.ID}>
+                    <td className="px-6 py-3">
+                      {assignment.EmployeeName.Title}
+                    </td>
+                    <td className="px-6 py-3">
+                      <div className="pl-3">
+                        <div className="text-base font-semibold">
+                          {assignment.CertifName.Title}
+                        </div>
+                        <div className="font-normal text-gray-500">
+                          {assignment.CertifSubCat.SubCategorie}
+                        </div>
                       </div>
-                      <div className="font-normal text-gray-500">
-                        {assignment.CertifSubCat.SubCategorie}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    {this.getStatusLabel(assignment.Title)}
-                  </td>
-                </tr>
-              ))}
-                
+                    </td>
+                    <td className="px-6 py-3">
+                      {this.getStatusLabel(assignment.Status)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
