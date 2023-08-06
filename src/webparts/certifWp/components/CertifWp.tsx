@@ -124,16 +124,25 @@ export default class App extends React.Component<ICertifWpProps, State> {
     const categories = await this.fetchCategories();
     const certificateAssignments = await this.fetchCertificateAssignments();
     this.setState({ categories, certificateAssignments });
-    const certificationAssignmentList = sp.web.lists.getByTitle(
-      "Certification Assignment"
-    );
-    const pendingItems = await certificationAssignmentList.items
+    const pendingItemCount = await this.fetchPendingItemCount();
+    this.setState({ pendingItemCount });
+    setInterval(async () => {
+      const newPendingItemCount = await this.fetchPendingItemCount();
+      this.setState({ pendingItemCount: newPendingItemCount });
+    }, 60000);
+
+  }
+  private async fetchPendingItemCount(): Promise<number> {
+    const certificationAssignmentList = sp.web.lists.getByTitle("Certification Assignment");
+    const pendingCertificationsRqst = await certificationAssignmentList.items
       .filter(`Status eq 'Pending'`)
       .get();
-    const pendingItemCount = pendingItems.length;
-    this.setState({ pendingItemCount });
+    const suggestedCertificationsList = sp.web.lists.getByTitle("SuggestedCertif");
+    const pendingsuggestedCertificationsRqst = await suggestedCertificationsList.items
+      .filter(`Status eq 'Pending'`)
+      .get();
+    return pendingCertificationsRqst.length + pendingsuggestedCertificationsRqst.length;
   }
-
   private async submitRequest(): Promise<void> {
     const {
       selectedCategory,
@@ -191,15 +200,22 @@ export default class App extends React.Component<ICertifWpProps, State> {
   
       // If the user selected "Other" for either category or subcategory, add to "Suggested Certifications" list
       if (isOtherCategorySelected || isOtherSubCategorySelected) {
-        const suggestedCertificationsList = sp.web.lists.getByTitle("SuggCert");
+        const suggestedCertificationsList = sp.web.lists.getByTitle("SuggestedCertif");
         const suggestedCategory = isOtherCategorySelected ? customCategory : selectedCategory;
         const suggestedSubcategory = isOtherSubCategorySelected ? customSubCategory : selectedSubCategory;
-  
+      
+        // Add the lookup field value from "Employee Information" list
+        const employeeInfoList = sp.web.lists.getByTitle("Employee Information");
+        const employeeQuery = await employeeInfoList.items
+          .filter(`Email eq '${currentUserEmail}'`)
+          .select("ID")
+          .get();
+        const employeeID = employeeQuery.length > 0 ? employeeQuery[0].ID : null;
         if (suggestedCategory || suggestedSubcategory) {
           await suggestedCertificationsList.items.add({
             Title: suggestedCategory,
             SubCategorie: suggestedSubcategory,
-            EmployeeEmail: currentUserEmail,
+            EmployeeEmailId: employeeID, 
           });
         }
       }
@@ -237,7 +253,13 @@ export default class App extends React.Component<ICertifWpProps, State> {
     isOtherSubCategorySelected: false,
     showAlert: true,
     showRequired : false,
+    
   });
+  setTimeout(() => {
+    this.setState({
+      showAlert: false,
+    });
+  }, 5000);
   }
   
   private async fetchCertificateAssignments(): Promise<any[]> {
@@ -327,7 +349,7 @@ export default class App extends React.Component<ICertifWpProps, State> {
     // Filter out the requests made by other users with "approved" status
     const otherUserApprovedRequests = this.state.certificateAssignments.filter(
       (assignment) =>
-        assignment.Status == "Approved" &&
+        assignment.Status === "Approved" &&
         assignment.EmployeeName.Email !== currentUserEmail
     );
     const { searchQuery } = this.state;
@@ -456,7 +478,7 @@ export default class App extends React.Component<ICertifWpProps, State> {
                     href="https://outlook.office365.com/"
                     className="relative w-full mb-2 flex justify-center items-center px-4 py-2 bg-Metallic-Blue hover:bg-Shadow-Blue rounded-lg text-white"
                   >
-                    Manage Requests
+                    Pending Requests
                     {this.state.pendingItemCount > 0 && (
                       <span className="absolute -top-2 -right-2 inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full dark:border-gray-900">
                         {this.state.pendingItemCount}
