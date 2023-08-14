@@ -2,7 +2,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
   "version": "2.0",
   "bundles": {
-
     "employee-wp-web-part": {
       "components": [
         {
@@ -18,12 +17,30 @@
           "manifest": "./src/webparts/certifWp/CertifWpWebPart.manifest.json"
         }
       ]
+    },
+    "footer-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/footer/FooterWebPart.js",
+          "manifest": "./src/webparts/footer/FooterWebPart.manifest.json"
+        }
+      ]
+    },
+    "manage-rq-wp-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/manageRqWp/ManageRqWpWebPart.js",
+          "manifest": "./src/webparts/manageRqWp/ManageRqWpWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
     "EmployeeWpWebPartStrings": "lib/webparts/employeeWp/loc/{locale}.js",
-    "CertifWpWebPartStrings": "lib/webparts/certifWp/loc/{locale}.js"
+    "CertifWpWebPartStrings": "lib/webparts/certifWp/loc/{locale}.js",
+    "FooterWebPartStrings": "lib/webparts/footer/loc/{locale}.js",
+    "ManageRqWpWebPartStrings": "lib/webparts/manageRqWp/loc/{locale}.js"
   }
 }
