@@ -1,73 +1,84 @@
+# HRMS (Human Resources Management System)
+
+## Overview
+A SharePoint Framework solution for managing employee certifications and HR processes. This application provides web parts for employee management, certification tracking, and HR request handling.
+
+Check the video demo in the video folder.
+
+## Key Features
+- Certification request and tracking system
+- Employee information management
+- HR request management interface 
+- Status tracking for certification requests
+- Notification system for pending requests
+
+## Tech Stack
+- SharePoint Framework (SPFx) v1.17.4
+- React 17.0.1
+- TypeScript
+- Tailwind CSS
+- PnP/SP library for SharePoint operations
+- Fluent UI React components
+- Power Automate (for notifications and workflows)
+
+## Web Parts
+
+### 1. CertifWp (Certification Web Part)
+- Allows employees to request certifications
+- Tracks certification status
+- Shows pending and on-hold requests
+- Supports custom category suggestions
+
+### 2. EmployeeWp (Employee Web Part)
+- Manages employee information
+- Provides employee listing and filtering
+- Supports employee data management
+
+### 3. ManageRqWp (Manage Requests Web Part)
+- HR interface for managing certification requests
+- Handles request approvals and rejections
+- Prerequisites management for certifications
+
+### 4. Footer Web Part
+- Consistent footer across pages
+- Navigation and additional information
+
+## Installation
+
+1. Clone repository
+2. Install dependencies:
+  ```bash
+  npm install
+  ```
+3. Run development server:
+  ```bash
+  gulp serve
+  ```
+
+## Configuration Requirements
+- SharePoint Online environment
+- Site collection with appropriate permissions
+- Modern SharePoint site
+- Node.js version >=16.13.0 <17.0.0
+
+## SharePoint Lists Required
+- Employee Information
+- Certification
+- Certification Assignment
+- SuggestedCertif
+- Prerequisite Certifications
+
+## Development Guidelines
+- Uses TypeScript for type safety
+- Follows Microsoft SharePoint Framework best practices
+- Implements responsive design using Tailwind CSS
+- Uses PnP libraries for SharePoint operations
+
+## Authors
+Solution created using SharePoint Framework and maintained by me.
+
+## Version
+Current version: 0.0.1
+SPFx version: 1.17.4
 # webpart-gen
 
-## Summary
-
-Short summary on functionality and used technologies.
-
-[picture of the solution in action, if possible]
-
-## Used SharePoint Framework Version
-
-![version](https://img.shields.io/badge/version-1.17.4-green.svg)
-
-## Applies to
-
-- [SharePoint Framework](https://aka.ms/spfx)
-- [Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant)
-
-> Get your own free development tenant by subscribing to [Microsoft 365 developer program](http://aka.ms/o365devprogram)
-
-## Prerequisites
-
-> Any special pre-requisites?
-
-## Solution
-
-| Solution    | Author(s)                                               |
-| ----------- | ------------------------------------------------------- |
-| folder name | Author details (name, company, twitter alias with link) |
-
-## Version history
-
-| Version | Date             | Comments        |
-| ------- | ---------------- | --------------- |
-| 1.1     | March 10, 2021   | Update comment  |
-| 1.0     | January 29, 2021 | Initial release |
-
-## Disclaimer
-
-**THIS CODE IS PROVIDED _AS IS_ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
-
----
-
-## Minimal Path to Awesome
-
-- Clone this repository
-- Ensure that you are at the solution folder
-- in the command-line run:
-  - **npm install**
-  - **gulp serve**
-
-> Include any additional steps as needed.
-
-## Features
-
-Description of the extension that expands upon high-level summary above.
-
-This extension illustrates the following concepts:
-
-- topic 1
-- topic 2
-- topic 3
-
-> Notice that better pictures and documentation will increase the sample usage and the value you are providing for others. Thanks for your submissions advance.
-
-> Share your web part with others through Microsoft 365 Patterns and Practices program to get visibility and exposure. More details on the community, open-source projects and other activities from http://aka.ms/m365pnp.
-
-## References
-
-- [Getting started with SharePoint Framework](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant)
-- [Building for Microsoft teams](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/build-for-teams-overview)
-- [Use Microsoft Graph in your solution](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-microsoft-graph-apis)
-- [Publish SharePoint Framework applications to the Marketplace](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/publish-to-marketplace-overview)
-- [Microsoft 365 Patterns and Practices](https://aka.ms/m365pnp) - Guidance, tooling, samples and open-source controls for your Microsoft 365 development
